@@ -1,1 +1,0 @@
-LVGL official folder
