@@ -48,7 +48,7 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>key_test\</OutputDirectory>
+          <OutputDirectory>.\template\</OutputDirectory>
           <OutputName>HAL_FreeRTOS_template</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
