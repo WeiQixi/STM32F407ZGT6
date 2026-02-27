@@ -1,0 +1,47 @@
+# --- Keil MDK 忽略列表 ---
+*.uvguix.*
+#*.uvoptx
+#*.uvprojx
+*.bak
+*.log
+*.lst
+*.map
+*.htm
+*.sct
+*.crf
+*.d
+*.o
+*.dep
+*.lnp
+*.tra
+*.sel
+*.iex
+*.lib
+*.axf
+*.hex
+*.bin
+*.dump
+*.elf
+*.out
+*.build_log.htm
+
+# --- 编译输出目录 ---
+/RTE/
+/Objects/
+/Listings/
+/JLinkLog.txt
+/JLinkSettings.ini
+
+# --- 其他 IDE 或编辑器 ---
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- 硬件特定 (可选) ---
+# 如果你不想上传烧录好的固件，取消下面注释
+ *.bin
+ *.hex
+
+开发板资料/
