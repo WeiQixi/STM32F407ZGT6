@@ -20,6 +20,7 @@
 #include "main.h"
 #include "usb_otg.h"
 #include "gpio.h"
+// #include "fsmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -47,6 +48,7 @@
 /* USER CODE BEGIN PV */
 TaskHandle_t hScanTask;
 TaskHandle_t hLedTask;
+TaskHandle_t hLcdTask;
 
 uint8_t scan_mode=0;
 /* USER CODE END PV */
@@ -100,10 +102,15 @@ int main(void)
   MX_GPIO_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
+  LCD_Init();
+
   if(xTaskCreate(Scan_Task,"key_scan",128,(void*)&scan_mode,3,&hScanTask)!=pdPASS){
     Error_Handler();
   }
   if(xTaskCreate(Led_task,"led",128,NULL,2,&hLedTask)!=pdPASS){
+    Error_Handler();
+  }
+  if(xTaskCreate(LCD_task,"display",2048,NULL,2,&hLcdTask)!=pdPASS){
     Error_Handler();
   }
   /* USER CODE END 2 */
@@ -169,17 +176,17 @@ void SystemClock_Config(void)
 
 uint32_t HAL_GetTick(void)
 {
-    /* 
-      公式：时间 (ms) = 计数值 / (CPU 频率 Hz / 1000)
-      注意：SystemCoreClock 必须在 SystemClock_Config() 之后才是正确的 (168MHz)
-      如果在 SystemClock_Config 之前调用，SystemCoreClock 默认为 16MHz (HSI)，
-      但这通常只影响极短时间的初始化，问题不大。
+  /*
+    公式：时间 (ms) = 计数值 / (CPU 频率 Hz / 1000)
+    注意：SystemCoreClock 必须在 SystemClock_Config() 之后才是正确的 (168MHz)
+    如果在 SystemClock_Config 之前调用，SystemCoreClock 默认为 16MHz (HSI)，
+    但这通常只影响极短时间的初始化，问题不大。
     */
-    if (SystemCoreClock == 0) {
-        // 防止除以零，虽然理论上不会发生
-        return DWT->CYCCNT / 168; 
-    }
-    return DWT->CYCCNT / (SystemCoreClock / 1000);
+  if (SystemCoreClock == 0){
+    // 防止除以零，虽然理论上不会发生
+    return DWT->CYCCNT / 168;
+  }
+  return DWT->CYCCNT / (SystemCoreClock / 1000);
 }
 /* USER CODE END 4 */
 

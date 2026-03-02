@@ -1,5 +1,6 @@
 #include "key.h"
 #include "main.h"
+#include "DWT_delay.h"
 
 uint8_t key_down=0x00;
 uint8_t key_up=0x00;
@@ -56,5 +57,6 @@ void Scan_Task(void* pvParameters){
 			key_down=0;
 		}
 		vTaskDelay(pdMS_TO_TICKS(5));
+		// DWT_Delay_ms(5);
 	}
 }

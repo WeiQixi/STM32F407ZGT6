@@ -37,6 +37,8 @@ extern "C" {
 #include "queue.h"
 #include "stream_buffer.h"
 #include "semphr.h"
+
+#include "lcd.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -64,8 +66,6 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED0_Pin GPIO_PIN_3
 #define LED0_GPIO_Port GPIOE
-#define LED1_Pin GPIO_PIN_4
-#define LED1_GPIO_Port GPIOE
 #define KEY3_Pin GPIO_PIN_6
 #define KEY3_GPIO_Port GPIOF
 #define KEY2_Pin GPIO_PIN_7
@@ -74,8 +74,6 @@ void Error_Handler(void);
 #define KEY1_GPIO_Port GPIOF
 #define KEY0_Pin GPIO_PIN_9
 #define KEY0_GPIO_Port GPIOF
-#define LED2_Pin GPIO_PIN_9
-#define LED2_GPIO_Port GPIOG
 
 /* USER CODE BEGIN Private defines */
 
