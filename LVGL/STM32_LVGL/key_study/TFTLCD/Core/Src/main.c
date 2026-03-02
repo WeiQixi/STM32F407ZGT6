@@ -166,20 +166,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-//void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
-//{
-//    /* 如果发生栈溢出，程序会卡死在这里 */
-//    /* pcTaskName 就是出错的任务名字，比如 "key_scan" */
-//    
-//    taskDISABLE_INTERRUPTS(); /* 关闭中断 */
-//    
-//    /* 在这行打断点，运行后如果停在这里，看 pcTaskName 的值 */
-//    for( ;; ); 
-//}
 
-/* 【关键步骤 2】重写 HAL_GetTick 函数 */
-/* 使用 DWT 计数器作为时间源，单位：毫秒 (ms) */
-/* 即使在中断关闭期间，DWT 也会持续计数，彻底解决 HAL_Delay 死锁问题 */
 uint32_t HAL_GetTick(void)
 {
     /* 
