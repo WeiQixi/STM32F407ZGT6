@@ -1,0 +1,253 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2026 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "main.h"
+#include "usb_otg.h"
+// #include "fsmc.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+// #include "touch.h"
+#include "lvgl.h"
+#include "lv_port_disp.h"
+#include "lv_port_indev.h"
+#include "lv_demos.h"
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+TaskHandle_t hlvdemo;
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+/* USER CODE BEGIN PFP */
+void DWT_Init(void);
+// 配置LVGL时钟源
+static uint32_t lv_Get_FreeRTOS_Tick_ms(void);
+/* USER CODE END PFP */
+
+/* Private user code ---------------------------------------------------------*/
+/* USER CODE BEGIN 0 */
+void lv_demo_task(void* pvParameters){
+//  lv_obj_t* switch_ogj=lv_switch_create(lv_scr_act());
+//  lv_obj_set_size(switch_ogj,16,60);
+//  lv_obj_align(switch_ogj,LV_ALIGN_CENTER,0,0);
+	lv_demo_music();
+  while(1){
+    lv_timer_handler();
+    vTaskDelay(pdMS_TO_TICKS(5));
+  }
+}
+/* USER CODE END 0 */
+
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(void)
+{
+
+  /* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+  DWT_Init();
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+  DWT->CYCCNT=0;
+  MX_USB_OTG_FS_PCD_Init();
+  lv_init();
+  // 【核心步骤】告诉 LVGL：去问 FreeRTOS 要时间！注册LVGL时钟源
+  lv_tick_set_cb(lv_Get_FreeRTOS_Tick_ms);
+  lv_port_disp_init();
+  lv_port_indev_init();
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  /* USER CODE BEGIN 2 */
+  if(xTaskCreate(lv_demo_task,"LVGL Demo",4096,NULL,2,&hlvdemo)!=pdPASS){
+    Error_Handler();
+  }
+  /* USER CODE END 2 */
+  
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  vTaskStartScheduler();
+  while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
+}
+
+/**
+  * @brief System Clock Configuration
+  * @retval None
+  */
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+
+  /** Configure the main internal regulator output voltage
+  */
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
+/* USER CODE BEGIN 4 */
+void DWT_Init(void){
+  /* 使能调试监控单元 */
+  CoreDebug->DEMCR|=CoreDebug_DEMCR_TRCENA_Msk;
+  /* 是能循环计数器 */
+  DWT->CTRL|=DWT_CTRL_CYCCNTENA_Msk;
+  /* 清零计数器 */
+  DWT->CYCCNT=0;
+}
+// 重写HAL_GetTick
+uint32_t HAL_GetTick(void)
+{
+  /*
+    公式：时间 (ms) = 计数值 / (CPU 频率 Hz / 1000)
+    注意：SystemCoreClock 必须在 SystemClock_Config() 之后才是正确的 (168MHz)
+    如果在 SystemClock_Config 之前调用，SystemCoreClock 默认为 16MHz (HSI)，
+    但这通常只影响极短时间的初始化，问题不大。
+    */
+  if (SystemCoreClock == 0){
+    // 防止除以零，虽然理论上不会发生
+    return DWT->CYCCNT / 168;
+  }
+  return DWT->CYCCNT / (SystemCoreClock / 1000);
+}
+
+// 配置LVGL时钟源
+static uint32_t lv_Get_FreeRTOS_Tick_ms(void){
+  // 获取当前的Tick计数
+  TickType_t ticks=xTaskGetTickCount();
+  // 获取 FreeRTOS 的频率 (Hz)，通常在 FreeRTOSConfig.h 中定义
+  // configTICK_RATE_HZ 默认为 1000 (1ms) 或 100 (10ms)
+  return (uint32_t)(ticks*1000/configTICK_RATE_HZ);
+}
+
+/* ========== LVGL v9.5 兼容性补丁 ========== */
+#include "lvgl.h" // 确保能识别 lv_result_t, LV_RESULT_INVALID 等
+
+// 补丁 1: BIN 解码器初始化（无参）
+void lv_bin_decoder_init(void) {
+    // v9.5 中 BIN 解码已内嵌到 lv_image_decoder.c，无需单独初始化
+}
+
+// 补丁 2: 颜色预乘转换（有参 + 返回值）
+lv_result_t lv_draw_buf_convert_premultiply(lv_draw_buf_t * buf) {
+    LV_UNUSED(buf); // 消除“未使用参数”警告
+    return LV_RESULT_INVALID; // 明确表示“不支持”
+}
+/* ====================================== */
+
+/* USER CODE END 4 */
+
+/**
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
+void Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
+  /* USER CODE END Error_Handler_Debug */
+}
+#ifdef USE_FULL_ASSERT
+/**
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
+void assert_failed(uint8_t *file, uint32_t line)
+{
+  /* USER CODE BEGIN 6 */
+  /* User can add his own implementation to report the file name and line number,
+     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  /* USER CODE END 6 */
+}
+#endif /* USE_FULL_ASSERT */
